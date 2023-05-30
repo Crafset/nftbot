@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
 
 def get_h3_and_links(url):
     response = requests.get(url)
@@ -15,15 +14,16 @@ def get_h3_and_links(url):
 
         for h3 in h3_tags:
             h3_text = h3.text.strip()
-            h3_and_links.append((h3_text, None))
+            h3_link = None
 
-        for link in links:
-            link_text = link.get("href", "").strip()
-            parsed_url = urlparse(link_text)
-            if parsed_url.netloc == "airdrops.io":
-                h3_and_links.append((None, link_text))
-            else:
-                h3_and_links.append((None, None))
+            for link in links:
+                link_text = link.get("href", "").strip()
+                if link_text.startswith("https://airdrops.io/"):
+                    h3_link = link_text
+                    break
+
+            if h3_link is not None:
+                h3_and_links.append((h3_text, h3_link))
 
     return h3_and_links
 
@@ -35,9 +35,7 @@ if __name__ == "__main__":
     if h3_and_links:
         print("Balises h3 et liens dans la classe 'inside-article' :")
         for h3, link in h3_and_links:
-            if h3:
-                print("Name :", h3)
-            if link:
-                print("Lien :", link)
+            print("Balise h3 :", h3, end=" ")
+            print("Lien :", link)
     else:
         print("Aucune balise h3 ou lien trouvés dans la classe 'inside-article' sur la page.")

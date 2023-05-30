@@ -36,7 +36,7 @@ if __name__ == "__main__":
         print("Balises h3 et liens dans la classe 'inside-article' :")
         for h3, link in h3_and_links:
             if h3:
-                print("Balise h3 :", h3)
+                print("Name :", h3, "Lien :",link)
             if link:
                 print("Lien :", link)
     else:

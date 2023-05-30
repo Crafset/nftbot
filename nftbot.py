@@ -1,23 +1,43 @@
 import requests
 from bs4 import BeautifulSoup
-import time
+from urllib.parse import urlparse
 
-while True:
-    url = "https://campfire.exchange/minting"
+def get_h3_and_links(url):
     response = requests.get(url)
+    soup = BeautifulSoup(response.content, "html.parser")
 
-    soup = BeautifulSoup(response.text, "html.parser")
-    nft_projects = soup.select(".nft-project-card")
+    inside_article_tags = soup.find_all(class_="inside-article")
+    h3_and_links = []
 
-    for project in nft_projects:
-        name = project.select_one(".nft-project-card-title").text
-        url = project.select_one("a")["href"]
-        discord_link = project.select_one(".discord-link")
-        twitter_link = project.select_one(".twitter-link")
+    for tag in inside_article_tags:
+        h3_tags = tag.find_all("h3")
+        links = tag.find_all("a")
 
-        if discord_link and twitter_link:
-            discord_url = discord_link["href"]
-            twitter_url = twitter_link["href"]
-            print(f"Project name: {name}\nProject URL: {url}\nDiscord URL: {discord_url}\nTwitter URL: {twitter_url}\n")
+        for h3 in h3_tags:
+            h3_text = h3.text.strip()
+            h3_and_links.append((h3_text, None))
 
-    time.sleep(60) # Attendre 60 secondes avant de continuer
+        for link in links:
+            link_text = link.get("href", "").strip()
+            parsed_url = urlparse(link_text)
+            if parsed_url.netloc == "airdrops.io":
+                h3_and_links.append((None, link_text))
+            else:
+                h3_and_links.append((None, None))
+
+    return h3_and_links
+
+
+if __name__ == "__main__":
+    url = "https://airdrops.io"  # Remplacez par l'URL du site web souhaité
+    h3_and_links = get_h3_and_links(url)
+
+    if h3_and_links:
+        print("Balises h3 et liens dans la classe 'inside-article' :")
+        for h3, link in h3_and_links:
+            if h3:
+                print("Balise h3 :", h3)
+            if link:
+                print("Lien :", link)
+    else:
+        print("Aucune balise h3 ou lien trouvés dans la classe 'inside-article' sur la page.")

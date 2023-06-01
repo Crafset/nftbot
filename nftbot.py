@@ -38,7 +38,7 @@ if __name__ == "__main__":
         now = datetime.now()
         one_week_ago = now - timedelta(days=7)
         for h3, link in h3_and_links:
-            print("Balise h3 :", h3, end=" ")
+            print("Name :", h3, end=" ")
             if link is not None:
                 try:
                     link_date = datetime.strptime(link.split("/")[-1], "%Y-%m-%d")

@@ -24,8 +24,7 @@ def get_h3_and_links(url):
                     h3_link = link_text
                     break
 
-            if h3_link is not None:
-                h3_and_links.append((h3_text, h3_link))
+            h3_and_links.append((h3_text, h3_link))
 
     return h3_and_links
 
@@ -39,17 +38,17 @@ if __name__ == "__main__":
         now = datetime.now()
         one_week_ago = now - timedelta(days=7)
         for h3, link in h3_and_links:
-            print("Balise h3 :", end=" ")
+            print("Balise h3 :", h3, end=" ")
             if link is not None:
                 try:
                     link_date = datetime.strptime(link.split("/")[-1], "%Y-%m-%d")
                     if link_date >= one_week_ago:
-                        print(Fore.GREEN + h3 + Style.RESET_ALL)  # Vert pour les nouvelles balises h3
+                        print(Fore.GREEN + "Lien :", link + Style.RESET_ALL)  # Lien en vert pour les nouvelles balises h3
                     else:
-                        print(Fore.YELLOW + h3 + Style.RESET_ALL)  # Orange pour les balises h3 anciennes
+                        print(Fore.YELLOW + "Lien :", link + Style.RESET_ALL)  # Lien en orange pour les balises h3 anciennes
                 except ValueError:
-                    print(h3)
+                    print("Lien :", link)
             else:
-                print(h3)
+                print("Lien : None")
     else:
         print("Aucune balise h3 ou lien trouvés dans la classe 'inside-article' sur la page.")

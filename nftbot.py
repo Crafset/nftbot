@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+from colorama import Fore, Style
 
 def get_h3_and_links(url):
     response = requests.get(url)
@@ -40,13 +41,15 @@ if __name__ == "__main__":
         for h3, link in h3_and_links:
             print("Balise h3 :", end=" ")
             if link is not None:
-                link_date = datetime.strptime(link.split("/")[-1], "%Y-%m-%d")
-                if link_date >= one_week_ago:
-                    print("\033[92m" + h3 + "\033[0m")  # Vert pour les nouvelles balises h3
-                else:
-                    print("\033[93m" + h3 + "\033[0m")  # Orange pour les balises h3 anciennes
+                try:
+                    link_date = datetime.strptime(link.split("/")[-1], "%Y-%m-%d")
+                    if link_date >= one_week_ago:
+                        print(Fore.GREEN + h3 + Style.RESET_ALL)  # Vert pour les nouvelles balises h3
+                    else:
+                        print(Fore.YELLOW + h3 + Style.RESET_ALL)  # Orange pour les balises h3 anciennes
+                except ValueError:
+                    print(h3)
             else:
                 print(h3)
     else:
         print("Aucune balise h3 ou lien trouvés dans la classe 'inside-article' sur la page.")
-

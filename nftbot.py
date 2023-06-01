@@ -42,12 +42,12 @@ if __name__ == "__main__":
                 try:
                     link_date = datetime.strptime(link.split("/")[-1], "%Y-%m-%d")
                     if link_date >= one_week_ago:
-                        print(Fore.GREEN + "Balise h3 :", h3, "Lien :", link + Style.RESET_ALL)  # Vert pour les nouvelles balises h3
+                        print(Fore.GREEN + "Name :", h3, "/ Lien :", link + Style.RESET_ALL)  # Vert pour les nouvelles balises h3
                     else:
-                        print(Fore.YELLOW + "Balise h3 :", h3, "Lien :", link + Style.RESET_ALL)  # Orange pour les balises h3 anciennes
+                        print(Fore.YELLOW + "Name :", h3, "/ Lien :", link + Style.RESET_ALL)  # Orange pour les balises h3 anciennes
                 except ValueError:
-                    print("Balise h3 :", h3, "Lien :", link)
+                    print("Name :", h3, "/ Lien :", link)
             else:
-                print("Balise h3 :", h3, "Lien : None")
+                print("Name :", h3, "/ Lien : None")
     else:
         print("Aucune balise h3 ou lien trouvés dans la classe 'inside-article' sur la page.")

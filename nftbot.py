@@ -1,27 +1,51 @@
-import discord
 import requests
-import asyncio
+import json
+import time
 
-source_guild_id = "1046516981907591279"  # Remplacez "ID_DU_SERVEUR_SOURCE" par l'ID réel du serveur source
-category_id = "1091438158404649091"  # Remplacez "ID_DE_LA_CATEGORIE" par l'ID réel de la catégorie
-webhook_url = "URL_DU_WEBHOOK"  # Remplacez "URL_DU_WEBHOOK" par l'URL réelle du webhook de votre serveur Discord
+# Remplacez les valeurs suivantes par vos propres informations
+BITGET_API_KEY = "YOUR_BITGET_API_KEY"
+BITGET_API_SECRET = "YOUR_BITGET_API_SECRET"
+DISCORD_WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL"
 
-class MyClient(discord.Client):
-    async def on_guild_channel_create(self, channel):
-        if isinstance(channel, discord.TextChannel) and channel.guild.id == source_guild_id and channel.category_id == category_id:
-            await asyncio.sleep(300)  # Attendre 5 minutes (300 secondes)
-            messages = await channel.history(limit=1).flatten()  # Récupérer le dernier message du salon
-            if messages:
-                message = messages[0]
-                embed = discord.Embed(
-                    title=f"Nouveau salon créé : {channel.name}",
-                    description=f"Contenu initial : {message.content}",
-                    color=discord.Color.green()
-                )
-                payload = {
-                    "embeds": [embed.to_dict()]
-                }
-                requests.post(webhook_url, json=payload)
+def send_discord_embed(name, rewards, farming_period):
+    data = {
+        "embeds": [
+            {
+                "title": name,
+                "description": f"Total des récompenses : {rewards}\nPériode de farming : {farming_period}"
+            }
+        ]
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(data), headers=headers)
+    if response.status_code != 204:
+        print("Erreur lors de l'envoi du message Discord :", response.text)
 
-client = MyClient()
-client.run()  # Pas besoin de spécifier le jeton (token) du bot
+def check_new_launchpools():
+    url = "https://api.bitget.com/api/v1/launchpools"
+    response = requests.get(url)
+    if response.status_code == 200:
+        launchpools = response.json()["data"]
+        # Vérifiez si un nouveau launchpool a été ajouté
+        # Vous pouvez mettre en place une logique personnalisée ici selon votre besoin
+        # Dans cet exemple, nous vérifions simplement si le nombre total de launchpools a augmenté
+        num_launchpools = len(launchpools)
+        if num_launchpools > check_new_launchpools.last_num_launchpools:
+            new_launchpool = launchpools[num_launchpools - 1]  # Récupère le dernier launchpool ajouté
+            name = new_launchpool["name"]
+            rewards = new_launchpool["totalRewards"]
+            farming_period = new_launchpool["farmingPeriod"]
+            send_discord_embed(name, rewards, farming_period)
+        check_new_launchpools.last_num_launchpools = num_launchpools
+    else:
+        print("Erreur lors de la requête Bitget :", response.text)
+
+# Initialisez la variable statique pour garder une trace du nombre de launchpools
+check_new_launchpools.last_num_launchpools = 0
+
+# Exécutez la vérification toutes les 10 secondes (modifiable selon vos besoins)
+while True:
+    check_new_launchpools()
+    time.sleep(10)

@@ -11,7 +11,7 @@ def get_top_cryptos():
     }
     headers = {
         "Accepts": "application/json",
-        "X-CMC_PRO_API_KEY": "VOTRE_CLE_API"
+        "X-CMC_PRO_API_KEY": "19cdf6d6-4d5c-4c12-afec-4591e7542d35"
     }
     
     response = requests.get(url, params=parameters, headers=headers)

@@ -1,51 +1,39 @@
 import requests
-import json
-import time
 
-# Remplacez les valeurs suivantes par vos propres informations
-BITGET_API_KEY = "YOUR_BITGET_API_KEY"
-BITGET_API_SECRET = "YOUR_BITGET_API_SECRET"
-DISCORD_WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL"
-
-def send_discord_embed(name, rewards, farming_period):
-    data = {
-        "embeds": [
-            {
-                "title": name,
-                "description": f"Total des récompenses : {rewards}\nPériode de farming : {farming_period}"
-            }
-        ]
-    }
-    headers = {
-        "Content-Type": "application/json"
-    }
-    response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(data), headers=headers)
-    if response.status_code != 204:
-        print("Erreur lors de l'envoi du message Discord :", response.text)
-
-def check_new_launchpools():
-    url = "https://api.bitget.com/api/v1/launchpools"
+def get_top_cryptos():
+    # Appel à l'API CoinMarketCap pour récupérer les informations sur le top 50 des cryptomonnaies
+    url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit=50&sortBy=market_cap&sortType=asc&convert=USD&cryptoType=all&tagType=all"
     response = requests.get(url)
+    data = response.json()
+
     if response.status_code == 200:
-        launchpools = response.json()["data"]
-        # Vérifiez si un nouveau launchpool a été ajouté
-        # Vous pouvez mettre en place une logique personnalisée ici selon votre besoin
-        # Dans cet exemple, nous vérifions simplement si le nombre total de launchpools a augmenté
-        num_launchpools = len(launchpools)
-        if num_launchpools > check_new_launchpools.last_num_launchpools:
-            new_launchpool = launchpools[num_launchpools - 1]  # Récupère le dernier launchpool ajouté
-            name = new_launchpool["name"]
-            rewards = new_launchpool["totalRewards"]
-            farming_period = new_launchpool["farmingPeriod"]
-            send_discord_embed(name, rewards, farming_period)
-        check_new_launchpools.last_num_launchpools = num_launchpools
-    else:
-        print("Erreur lors de la requête Bitget :", response.text)
+        return data["data"]["cryptoCurrencyList"]
 
-# Initialisez la variable statique pour garder une trace du nombre de launchpools
-check_new_launchpools.last_num_launchpools = 0
+    return None
 
-# Exécutez la vérification toutes les 10 secondes (modifiable selon vos besoins)
-while True:
-    check_new_launchpools()
-    time.sleep(10)
+def get_wallets(crypto_id):
+    # Appel à l'API CoinMarketCap pour récupérer les informations sur les portefeuilles d'une cryptomonnaie
+    url = f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/wallets/rankings/latest?id={crypto_id}&start=1&limit=100&score=market_cap"
+    response = requests.get(url)
+    data = response.json()
+
+    if response.status_code == 200:
+        return data["data"]["cryptoCurrency"]["wallets"]
+
+    return None
+
+def print_wallets():
+    top_cryptos = get_top_cryptos()
+
+    if top_cryptos is not None:
+        for crypto in top_cryptos:
+            if crypto["marketCap"] < 100_000_000:
+                crypto_id = crypto["id"]
+                wallets = get_wallets(crypto_id)
+                if wallets is not None:
+                    print(f"--- {crypto['name']} Wallets ---")
+                    for wallet in wallets:
+                        print(wallet["address"])
+                    print()
+
+print_wallets()

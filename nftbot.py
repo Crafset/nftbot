@@ -13,7 +13,7 @@ def get_top_cryptos():
         "Accepts": "application/json",
         "X-CMC_PRO_API_KEY": "19cdf6d6-4d5c-4c12-afec-4591e7542d35"
     }
-    
+
     response = requests.get(url, params=parameters, headers=headers)
     data = response.json()
 
@@ -24,22 +24,22 @@ def get_top_cryptos():
 
 def filter_cryptos(cryptos):
     filtered_cryptos = []
-    
+
     for crypto in cryptos:
         if crypto["quote"]["USD"]["market_cap"] < 100000000:
-            if len(crypto["platform"]) > 0:
+            if len(crypto["platform"]["token_address"]) > 0:
                 filtered_cryptos.append(crypto)
-    
+
     return filtered_cryptos
 
 def get_cryptos_with_large_wallets(cryptos):
     cryptos_with_large_wallets = []
-    
+
     for crypto in cryptos:
         if crypto["tags"] and "wallet" in crypto["tags"]:
             if crypto["num_market_pairs"] > 1:
                 cryptos_with_large_wallets.append(crypto)
-    
+
     return cryptos_with_large_wallets
 
 # Récupération des cryptomonnaies du top 50

@@ -1,61 +1,27 @@
 import requests
 
-def get_top_cryptos():
-    url = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest"
-    parameters = {
-        "start": "1",
-        "limit": "50",
-        "sort": "market_cap",
-        "convert": "USD",
-        "aux": "num_market_pairs,tags"
-    }
-    headers = {
-        "Accepts": "application/json",
-        "X-CMC_PRO_API_KEY": "19cdf6d6-4d5c-4c12-afec-4591e7542d35"
-    }
+# Nom de la cryptomonnaie
+crypto = "uniswap"
 
-    response = requests.get(url, params=parameters, headers=headers)
+# Fonction pour obtenir la liste des exchanges avec les prix de la cryptomonnaie UNI
+def get_exchange_prices(crypto):
+    url = f"https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids={crypto}"
+    response = requests.get(url)
     data = response.json()
+    return data
 
-    if "data" in data:
-        return data["data"]
-    else:
-        return None
+# Obtention de la liste des exchanges avec les prix de UNI
+exchange_data = get_exchange_prices(crypto)
 
-def filter_cryptos(cryptos):
-    filtered_cryptos = []
-
-    for crypto in cryptos:
-        if crypto["quote"]["USD"]["market_cap"] < 100000000:
-            if len(crypto["platform"]["token_address"]) > 0:
-                filtered_cryptos.append(crypto)
-
-    return filtered_cryptos
-
-def get_cryptos_with_large_wallets(cryptos):
-    cryptos_with_large_wallets = []
-
-    for crypto in cryptos:
-        if crypto["tags"] and "wallet" in crypto["tags"]:
-            if crypto["num_market_pairs"] > 1:
-                cryptos_with_large_wallets.append(crypto)
-
-    return cryptos_with_large_wallets
-
-# Récupération des cryptomonnaies du top 50
-cryptos = get_top_cryptos()
-
-if cryptos:
-    # Filtrage des cryptomonnaies selon les critères spécifiés
-    filtered_cryptos = filter_cryptos(cryptos)
-
-    # Récupération des cryptomonnaies avec plusieurs gros wallets associés
-    cryptos_with_large_wallets = get_cryptos_with_large_wallets(filtered_cryptos)
+if len(exchange_data) > 0:
+    # Recherche du prix le plus bas et le plus élevé
+    lowest_price_exchange = min(exchange_data, key=lambda x: x["current_price"])
+    highest_price_exchange = max(exchange_data, key=lambda x: x["current_price"])
 
     # Affichage des résultats
-    for crypto in cryptos_with_large_wallets:
-        print("Nom : ", crypto["name"])
-        print("Wallet : ", crypto["platform"]["token_address"])
-        print("--------------------------------------")
+    print(f"Crypto: {crypto}")
+    print(f"Prix le plus bas sur {lowest_price_exchange['name']}: {lowest_price_exchange['current_price']} USD")
+    print(f"Prix le plus élevé sur {highest_price_exchange['name']}: {highest_price_exchange['current_price']} USD")
 else:
-    print("Erreur lors de la récupération des données.")
+    print(f"Impossible de trouver des données pour {crypto}")
+
